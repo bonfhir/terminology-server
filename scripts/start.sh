@@ -27,11 +27,35 @@ docker start $NAME
 sleep 10
 
 # import definitions
-docker exec -it $NAME scripts/upload-definitions.sh "$URL" "$VERSION"
+docker exec -it $NAME scripts/upload-definitions.sh \
+    "$URL" \
+    "$VERSION"
 
-# import terminologies
-# TODO: check if enabled in code-systems.yml
-docker exec -it $NAME scripts/import-icd10-cm.sh
-docker exec -it $NAME scripts/import-icd10.sh
-docker exec -it $NAME scripts/import-loinc.sh
-docker exec -it $NAME scripts/import-snomed.sh
+# import SNOMED CT
+
+docker exec -it $NAME scripts/import.sh \
+    terminologies/data/SnomedCT_ManagedServiceUS_PRODUCTION_US1000124_20230901T120000Z.zip \
+    "$VERSION" \
+    $URL \
+    "http://snomed.info/sct"
+
+# import LOINC
+docker exec -it $NAME scripts/import.sh \
+    terminologies/data/Loinc_2.72.zip \
+    "$VERSION" \
+    $URL \
+    "http://loinc.org"
+
+# import ICD-10
+docker exec -it $NAME scripts/import.sh \
+    "terminologies/data/icdClaML2019ens.zip" \
+    "$VERSION" \
+    $URL \
+    "http://hl7.org/fhir/sid/icd-10"
+
+# import ICD-10-CM
+docker exec -it $NAME scripts/import.sh \
+    "terminologies/data/icd10cm_tabular_2021.xml" \
+    "$VERSION" \
+    $URL \
+    "http://hl7.org/fhir/sid/icd-10-cm"
