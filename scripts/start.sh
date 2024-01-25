@@ -38,39 +38,3 @@ if [ ! -e "configs/DEFINITIONS" ]; then
         "$URL" \
         "$VERSION" && touch configs/DEFINITIONS
 fi
-
-# import SNOMED CT
-if [ ! -e "configs/SNOMED" ]; then
-    docker exec -it $NAME scripts/import.sh \
-        terminologies/data/SnomedCT_ManagedServiceUS_PRODUCTION_US1000124_20230901T120000Z.zip \
-        "$VERSION" \
-        $URL \
-        "http://snomed.info/sct" && touch configs/SNOMED
-fi
-
-# import LOINC
-if [ ! -e "configs/LOINC" ]; then
-    docker exec -it $NAME scripts/import.sh \
-        terminologies/data/Loinc_2.72.zip \
-        "$VERSION" \
-        $URL \
-        "http://loinc.org" && touch configs/LOINC
-fi
-
-# import ICD-10
-if [ ! -e "configs/ICD-10" ]; then
-    docker exec -it $NAME scripts/import.sh \
-        "terminologies/data/icdClaML2019ens.zip" \
-        "$VERSION" \
-        $URL \
-        "http://hl7.org/fhir/sid/icd-10" && touch configs/ICD-10
-fi
-
-# import ICD-10-CM
-if [ ! -e "configs/ICD-10-CM" ]; then
-    docker exec -it $NAME scripts/import.sh \
-        "terminologies/data/icd10cm_tabular_2021.xml" \
-        "$VERSION" \
-        $URL \
-        "http://hl7.org/fhir/sid/icd-10-cm" && touch configs/ICD-10-CM
-fi
