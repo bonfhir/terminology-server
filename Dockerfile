@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM bitnami/minideb:latest AS build-bonfhir
+FROM debian:bookworm-slim AS build-bonfhir
 
 RUN apt-get update && apt-get upgrade && apt-get install -y curl unzip
 RUN mkdir -p /usr/src/hapi-fhir-cli \
