@@ -1,7 +1,5 @@
 #!/bin/sh
-VERSION=r4
-TARGET="http://localhost:8080/fhir"
-
-hapi-fhir-cli upload-definitions \
-    -t $TARGET \
-    -v $VERSION
+if [ ! -e "configs/DEFINITIONS" ]; then
+    echo "Uploading definitions to '$1' (version $2) ..."
+    hapi-fhir-cli upload-definitions -t "$1" -v "$2" && touch configs/DEFINITIONS
+fi

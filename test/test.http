@@ -1,1 +1,18 @@
 GET http://localhost:8080/fhir/CodeSystem/$lookup?code=A04&system=http://hl7.org/fhir/sid/icd-10-cm
+
+{
+  "resourceType": "Parameters",
+  "parameter": [ {
+    "name": "name",
+    "valueString": "ICD-10-CM"
+  }, {
+    "name": "version",
+    "valueString": "2024"
+  }, {
+    "name": "display",
+    "valueString": "Other bacterial intestinal infections"
+  }, {
+    "name": "abstract",
+    "valueBoolean": false
+  } ]
+}

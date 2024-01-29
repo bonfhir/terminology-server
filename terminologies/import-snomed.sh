@@ -1,1 +1,0 @@
-hapi-fhir-cli upload-terminology -d data/SnomedCT_ManagedServiceUS_PRODUCTION_US1000124_20230901T120000Z.zip -v r4 -t http://localhost:8080/fhir -u http://snomed.info/sct
