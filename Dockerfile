@@ -18,6 +18,7 @@ COPY <<EOF /bin/app.sh
 cd /app && java --class-path /app/main.war -Dloader.path="main.war!/WEB-INF/classes/,main.war!/WEB-INF/,/app/extra-classes" org.springframework.boot.loader.PropertiesLauncher
 EOF
 
+FROM oven/bun AS bun
 FROM hapiproject/hapi:latest AS hapi-distroless
 FROM hapiproject/hapi:latest-tomcat AS bonfhir-hapi
 
@@ -25,10 +26,16 @@ USER root
 RUN apt update && apt install -y curl libncurses5-dev  # libncurses5-dev for tput
 
 COPY --from=build-bonfhir --chown=1001:1001 /usr/src/hapi-fhir-cli /usr/bin/
+
 COPY --from=build-bonfhir --chown=1001:1001 /bin/app.sh /bin/
-COPY --chown=1001:1001 --from=hapi-distroless /app /app
 RUN chmod a+x /bin/app.sh
+
+COPY --chown=1001:1001 --from=hapi-distroless /app /app
+
+COPY --from=bun --chown=1001:1001 /usr/local/bin/bun /usr/bin/
+
+ADD --chown=1001:1001 ./scripts /bonfhir/scripts/
 
 USER 1001
 
-ENTRYPOINT [ "/bin/app.sh" ]
+ENTRYPOINT [ "/bin/bash" ]
