@@ -3,7 +3,6 @@
 FROM debian:bookworm-slim AS build-bonfhir
 
 ENV URL "http://localhost:8080/fhir"
-ENV VERSION "r4"
 
 RUN apt-get update && apt-get upgrade && apt-get install -y curl unzip
 RUN mkdir -p /usr/src/hapi-fhir-cli \
@@ -15,7 +14,7 @@ COPY <<EOF /bin/app.sh
 # This script is run when the container starts
 # It is used to start the application
 # the code system bootstrap script should be added around here
-/scripts/bootstrap.sh $URL $VERSION &
+/scripts/bootstrap.sh $URL &
 cd /app && java --class-path /app/main.war -Dloader.path="main.war!/WEB-INF/classes/,main.war!/WEB-INF/,/app/extra-classes" org.springframework.boot.loader.PropertiesLauncher
 EOF
 
