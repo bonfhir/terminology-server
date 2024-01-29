@@ -1,1 +1,4 @@
 terminologies/data/*
+
+configs/*
+!configs/application.yml
