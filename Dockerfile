@@ -22,6 +22,9 @@ EOF
 FROM hapiproject/hapi:latest AS hapi-distroless
 FROM hapiproject/hapi:latest-tomcat AS bonfhir-hapi
 
+USER root
+RUN apt update && apt install -y curl libncurses5-dev  # libncurses5-dev for tput
+
 COPY --from=build-bonfhir --chown=1001:1001 /usr/src/hapi-fhir-cli /usr/bin/
 COPY --from=build-bonfhir --chown=1001:1001 /bin/app.sh /bin/
 COPY --chown=1001:1001 --from=hapi-distroless /app /app
@@ -30,4 +33,3 @@ RUN chmod a+x /bin/app.sh
 USER 1001
 
 ENTRYPOINT [ "/bin/app.sh" ]
-
