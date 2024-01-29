@@ -1,7 +1,4 @@
 terminologies/data/*
 
-configs/DEFINITIONS
-configs/SNOMED
-configs/LOINC
-configs/ICD-10
-configs/ICD-10-CM
+configs/*
+!configs/application.yml
