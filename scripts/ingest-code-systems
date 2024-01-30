@@ -1,0 +1,61 @@
+#! /usr/bin/bun
+
+import YAML from "yaml";
+
+type CodeSystemConfigEntry = {
+  id: string;
+  version: string;
+  source: string;
+};
+type CodeSystemConfigServer = {
+  url: string;
+};
+type CodeSystemConfig = {
+  server: CodeSystemConfigServer;
+  "code-systems": CodeSystemConfigEntry[];
+};
+
+const CONFIG_PATH = "/configs/code-systems.yml";
+
+const configFile = Bun.file(CONFIG_PATH);
+const configFileString = await configFile.text();
+const configs = YAML.parse(configFileString) as CodeSystemConfig;
+
+serverReady(configs.server.url);
+process.exit(0);
+
+const serverUrl = configs.server.url;
+const codeSystems = configs["code-systems"];
+for (const codeSystem of codeSystems) {
+  await ingestCodeSystem(serverUrl, codeSystem);
+}
+
+async function ingestCodeSystem(
+  serverUrl: string,
+  codeSystem: CodeSystemConfigEntry
+) {
+  console.log(
+    `Ingesting code system ${codeSystem.id} version ${codeSystem.version} from ${codeSystem.source}...`
+  );
+  const dataSource = codeSystem.source;
+  const dataType = codeSystem.id;
+  const dataVersion = codeSystem.version;
+
+  const result = Bun.spawnSync([
+    "/bonfhir/scripts/terminology-upload",
+    serverUrl,
+    dataType,
+    dataVersion,
+    dataSource,
+  ]);
+  console.log(result.stdout.toString());
+  console.log("errors: ");
+  console.log(result.stderr.toString());
+  return;
+}
+
+function serverReady(serverUrl: string) {
+  const result = Bun.spawnSync(["/bonfhir/scripts/server-ready", serverUrl]);
+  console.log("serverReady:", result);
+  return;
+}
