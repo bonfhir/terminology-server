@@ -2,7 +2,7 @@
 
 The Terminology Server is built using HAPI FHIR which is a Java implementation of the HL7 FHIR standard. When adding an authentication layer to HAPI FHIR, we need to consider the specific requirements and constraints of healthcare applications. This Terminology Server is meant as either a development tool or a building block for more complex health systems.
 
-## Summary of Authentication of Considered Options
+## Summary of Considered Authentication Options
 
  - OAuth 2.0: Widely adopted authentication and authorization framework. It provides a secure and standardized way to authenticate and authorize users and applications. With OAuth 2.0, users can grant access to their healthcare data to third-party applications without sharing their credentials. OAuth 2.0 supports different grant types, such as authorization code, client credentials, and resource owner password credentials.
 
