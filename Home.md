@@ -1,1 +1,1 @@
-Welcome to the terminology-server wiki!
+Welcome to the Bonfhir Terminology Server wiki!
