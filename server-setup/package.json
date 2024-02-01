@@ -1,6 +1,6 @@
 {
   "name": "terminology-server-scripts",
-  "module": "ingest-code-systems",
+  "module": "server-setup",
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest"

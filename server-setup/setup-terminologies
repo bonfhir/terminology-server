@@ -25,7 +25,7 @@ for (const codeSystem of codeSystems) {
 async function uploadDefinition(serverUrl: string, fhirVersion: string) {
   console.log(`Uploading definition for FHIR version ${fhirVersion}...`);
   const result = Bun.spawnSync([
-    "/bonfhir/scripts/definition-upload",
+    "/bonfhir/server-setup/definition-upload",
     serverUrl,
     fhirVersion,
   ]);
@@ -47,7 +47,7 @@ async function ingestCodeSystem(
   const dataVersion = codeSystem.version;
 
   const result = Bun.spawnSync([
-    "/bonfhir/scripts/terminology-upload",
+    "/bonfhir/server-setup/terminology-upload",
     serverUrl,
     dataType,
     dataVersion,

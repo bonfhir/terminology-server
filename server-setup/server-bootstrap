@@ -7,4 +7,4 @@ URL=$($DIR/get-server-url)
 $DIR/server-ready "$URL"
 
 # setup hapi server with code systems & definitions
-$DIR/server-setup
+$DIR/setup-terminologies
