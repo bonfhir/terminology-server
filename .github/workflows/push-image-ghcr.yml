@@ -1,0 +1,59 @@
+name: Deploy Docker Image to GHCR
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump-version:
+        type: choice
+        required: true
+        description: Bump version
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
+          - none
+
+jobs:
+  bump-version:
+    name: "Bump Image VERSION"
+    if: inputs.bump-version != 'none'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Auto Bump
+        run: ./scripts/bump-version.sh ${{inputs.bump-version}}
+      - uses: stefanzweifel/git-auto-commit-action@v5
+  push-store-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set Version
+        run: echo "TERMINOLOGY_SERVER_VERSION=$(cat $(pwd)/VERSION)" >> $GITHUB_ENV
+
+      - name: Log Version
+        run: echo "Building Version $TERMINOLOGY_SERVER_VERSION"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Build & Push Terminology Server Image"
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: true
+          tags: ghcr.io/bonfhir/terminology-server:latest,ghcr.io/bonfhir/terminology-server:v${{ env.TERMINOLOGY_SERVER_VERSION }}
+          outputs: type=image,name=target,annotation-index.org.opencontainers.image.source=https://github.com/bonfhir/terminology-server,annotation-index.org.opencontainers.image.description=A HAPI docker image with automatic code system bootstraping
