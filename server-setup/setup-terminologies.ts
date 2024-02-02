@@ -3,6 +3,8 @@
 import {
   type CodeSystemConfigEntry,
   readConfigFile,
+  type FHIRVersion,
+  FHIR_VERSIONS,
 } from "./code-system-configs.js";
 
 const TERMINOLOGIES_DATA_BASEPATH = "/terminologies/data/";
@@ -22,16 +24,19 @@ for (const codeSystem of codeSystems) {
   await ingestCodeSystem(serverUrl, codeSystem);
 }
 
-async function uploadDefinition(serverUrl: string, fhirVersion: string) {
+async function uploadDefinition(serverUrl: string, fhirVersion: FHIRVersion) {
   console.log(`Uploading definition for FHIR version ${fhirVersion}...`);
   const result = Bun.spawnSync([
-    "/bonfhir/server-setup/definition-upload",
+    "/bonfhir/server-setup/definition-upload.sh",
     serverUrl,
     fhirVersion,
   ]);
   console.log(result.stdout.toString());
-  console.log("errors: ");
-  console.log(result.stderr.toString());
+  const errors = result.stderr.toString();
+  if (errors) {
+    console.log("errors: ");
+    console.log(errors);
+  }
   return;
 }
 
@@ -47,7 +52,7 @@ async function ingestCodeSystem(
   const dataVersion = codeSystem.version;
 
   const result = Bun.spawnSync([
-    "/bonfhir/server-setup/terminology-upload",
+    "/bonfhir/server-setup/terminology-upload.sh",
     serverUrl,
     dataType,
     dataVersion,
