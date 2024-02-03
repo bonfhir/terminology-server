@@ -59,7 +59,10 @@ async function ingestCodeSystem(
     TERMINOLOGIES_DATA_BASEPATH + dataSource,
   ]);
   console.log(result.stdout.toString());
-  console.log("errors: ");
-  console.log(result.stderr.toString());
+  const errors = result.stderr.toString();
+  if (errors) {
+    console.log("errors: ");
+    console.log(errors);
+  }
   return;
 }
