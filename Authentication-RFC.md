@@ -65,7 +65,7 @@ Finally, recommendations for improvement are suggested, and the document conclud
 
 - Mutual TLS (mTLS): A form of client authentication that uses X.509 certificates to verify the identity of both the client and server. With mTLS, the server requires the client to present a valid client certificate during the TLS handshake. This provides strong authentication and ensures that only authorized clients can access the server.
 
-# Evaluation Criteria for Authentication Mechanisms
+# 3. Evaluation Criteria for Authentication Mechanisms
 
 Each of these authentication options has its own advantages and considerations. Let's evaluate them based on the concerns we discussed earlier:
 
@@ -79,21 +79,21 @@ Each of these authentication options has its own advantages and considerations. 
 
 Maintenance and developer experience: Implementing and maintaining the authentication mechanism should not introduce unnecessary complexity for developers. It should have good documentation, libraries, and tools to facilitate the implementation process.
 
-# Recommendation for Healthcare Authentication
+# 4. Recommendation for Healthcare Authentication
 
 Considering these factors, I would recommend using SMART on FHIR for adding an authentication layer to HAPI FHIR. SMART on FHIR combines the power of FHIR, OAuth 2.0, and OpenID Connect to provide a standardized and secure authentication mechanism for healthcare applications. It has been widely adopted in the healthcare industry and has good integration capabilities with electronic health records systems.
 
 However, it's important to evaluate the specific requirements of this project, such as regulatory compliance and interoperability needs, before making a final decision. Additionally, thorough security testing and adherence to best practices are crucial for ensuring the overall security of the system. The Terminology Server is either meant as a building block for more complex systems or as a development tool. In the later case, authorization might even be disabled entirely. But in the former, it may be necessary to implement best practices.
 
-# OAuth 2.0
+# 5. OAuth 2.0
 
-# OpenID Connect
+# 6. OpenID Connect
 
-# SMART on FHIR
+# 7. SMART on FHIR
 
-# Mutual TLS (mTLS)
+# 8. Mutual TLS (mTLS)
 
-# Application of Evaluation Criteria
+# 9. Application of Evaluation Criteria
 
 # 10. Interceptor vs Proxy for Authentication
 
