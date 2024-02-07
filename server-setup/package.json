@@ -1,0 +1,14 @@
+{
+  "name": "terminology-server-scripts",
+  "module": "server-setup",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "yaml": "^2.3.4"
+  }
+}

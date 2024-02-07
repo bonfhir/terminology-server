@@ -1,4 +1,6 @@
 terminologies/data/*
 
-configs/*
-!configs/application.yml
+mounts/**
+!mounts/configs/application.yml
+
+**/node_modules
