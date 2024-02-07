@@ -14,6 +14,9 @@ const config = await readConfigFile();
 const serverUrl = config.server.url;
 const codeSystems = config["code-systems"];
 
+await serverIsReady(serverUrl);
+console.log("Server is ready!");
+
 const versions = new Set(codeSystems.map((cs) => cs.version));
 // is the HAPI server supporting multiple FHIR versions simultaneously?
 for (const version of versions) {
@@ -65,4 +68,20 @@ async function ingestCodeSystem(
     console.log(errors);
   }
   return;
+}
+
+async function serverIsReady(serverUrl: string) {
+  while (true) {
+    try {
+      const response = await Bun.fetch(serverUrl + "/metadata", {
+        headers: { accept: "application/fhir+jso" },
+      });
+      if (response.ok) {
+        return;
+      }
+    } catch (error) {
+      console.log("Server not ready yet, retrying in 5 seconds...");
+      await Bun.sleep(5000);
+    }
+  }
 }
