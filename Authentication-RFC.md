@@ -1,40 +1,49 @@
 # Summary
 
 1. Introduction
+   Briefly introduces the context of the document, focusing on the Terminology Server built using HAPI FHIR for healthcare applications.
 
-   Briefly explain the purpose of the RFC.
+2. Authentication Mechanisms Overview
+   Provides a general overview of key authentication mechanisms, including OAuth 2.0, OpenID Connect, SMART on FHIR, and Mutual TLS (mTLS).
 
-2. Current Code Systems Supported
+3. Evaluation Criteria for Authentication Mechanisms
+   Outlines the criteria for evaluating authentication mechanisms, including security, user experience, scalability, integration, and maintenance/developer experience.
 
-   Provide a list of the code systems that are currently supported by HAPI.
+4. Recommendation for Healthcare Authentication
+   Recommends using SMART on FHIR based on the evaluation criteria and considerations specific to healthcare applications.
 
-3. Identified Additional Code Systems
+5. OAuth 2.0
+   Describes OAuth 2.0, highlighting its role in providing a secure and standardized way to authenticate and authorize users and applications in healthcare.
 
-   Enumerate the extra code systems that need to be supported in HAPI.
+6. OpenID Connect
+   Explores OpenID Connect as an identity layer built on OAuth 2.0, emphasizing its authentication and single sign-on capabilities within healthcare.
 
-4. Challenges in Integrating Additional Code Systems
+7. SMART on FHIR
+   Details SMART on FHIR as a set of specifications enabling secure authentication and authorization of healthcare applications, combining FHIR, OAuth 2.0, and OpenID Connect.
 
-   Discuss the challenges or limitations in integrating the extra code systems.
+8. Mutual TLS (mTLS)
+   Discusses Mutual TLS as a form of client authentication using X.509 certificates, ensuring strong authentication for both clients and servers in healthcare contexts.
 
-5. Universal Mechanism for Ingesting Extra Codes
+9. Application of Evaluation Criteria
+   Applies the evaluation criteria to each authentication mechanism, providing a comparative analysis to assist in decision-making.
 
-   Propose a universal mechanism that can be used to ingest the extra codes.
+10. Interceptor vs. Proxy for Authentication
+    Explores the Interceptor pattern in HAPI FHIR and the option of proxying authentication requests to external web servers like Nginx or Jetty.
 
-6. Implementation Details
+11. Interceptor Pattern in HAPI
+    Discusses the pros and cons of using the Interceptor pattern in HAPI FHIR for authentication, highlighting fine-grained control and potential implementation complexity.
 
-   Provide details on how the proposed mechanism can be implemented in HAPI.
+12. Proxy Authentication Requests to a Web Server
+    Examines the advantages and disadvantages of proxying authentication requests to external web servers, emphasizing separation of concerns and potential infrastructure complexity.
 
-7. Benefits and Impact
+13. Consideration Guidelines
+    Provides guidelines for choosing between the Interceptor pattern and proxying authentication based on specific requirements and constraints.
 
-   Explain the benefits of supporting additional code systems and the impact it could have on users.
+14. Recommendations for Improvement
+    Offers suggestions for enhancing the document, including considerations for regulatory compliance, visual elements, real-world examples, and future considerations.
 
-8. Open Questions and Concerns
-
-   Mention any remaining open questions or concerns that need to be addressed.
-
-9. Conclusion
-
-   Summarize the key points and propose a next step for the implementation.
+15. Conclusion
+    Summarizes key points from the document and reinforces the recommendation to use SMART on FHIR for healthcare authentication in the context of HAPI FHIR.
 
 # 1. Introduction
 
@@ -90,6 +99,10 @@ In the healthcare domain, especially when integrated with HAPI FHIR, OpenID Conn
 
 # 7. SMART on FHIR
 
+SMART on FHIR, standing for Substitutable Medical Applications, Reusable Technologies, represents a groundbreaking framework that integrates the FHIR standard with OAuth 2.0 and OpenID Connect to facilitate secure, seamless access to electronic health records (EHRs). This approach enables the development of interoperable healthcare applications that can operate within diverse healthcare IT ecosystems, providing clinicians, researchers, and patients with tools that enhance decision-making and patient care. By leveraging the comprehensive FHIR API for healthcare data exchange combined with robust authentication and authorization mechanisms, SMART on FHIR ensures that healthcare applications can securely access and utilize patient data, fostering innovation and personalized healthcare solutions.
+
+Incorporating SMART on FHIR within the HAPI FHIR framework empowers developers to create applications that are not only interoperable but also aligned with stringent security and privacy standards. This is particularly crucial in the healthcare sector, where safeguarding patient information is paramount. SMART on FHIR's emphasis on secure authentication, fine-grained authorization, and user consent aligns perfectly with the needs of modern healthcare systems, ensuring that access to sensitive health information is strictly managed and compliant with legal and regulatory frameworks. The integration of SMART on FHIR with HAPI FHIR paves the way for a new era of healthcare applications that are secure, user-friendly, and deeply integrated into clinical workflows, enhancing the quality of care and patient outcomes.
+
 # 8. Mutual TLS (mTLS)
 
 # 9. Application of Evaluation Criteria
@@ -100,7 +113,7 @@ HAPI supports an Interceptor pattern to inject code into the server side or clie
 
 The Interceptor pattern provided by HAPI can be a viable option for implementing authentication in HAPI FHIR. However, there are some considerations to keep in mind when deciding whether to use the Interceptor pattern or proxying authentication requests to a web server like Nginx or Jetty. Let's evaluate both options:
 
-# 11. Interceptor pattern in HAPI:
+# 11. Interceptor Pattern in HAPI:
 
 The Interceptor pattern in HAPI allows you to inject code at specific points within the server or client processing pipeline. This can be useful for implementing custom logic, including authentication.
 
@@ -114,7 +127,7 @@ Cons:
 - Implementation complexity: Implementing authentication with the Interceptor pattern may require additional effort and complexity, especially if you need to handle various authentication mechanisms or integrate with external systems.
 - Potential performance impact: Interceptors are executed within the HAPI processing pipeline, which may introduce some performance overhead, depending on the complexity of the interceptor code.
 
-# 12. Proxy Authentication Requests to a Web Server:
+# 12. Proxy Authentication Requests to a Web Server
 
 Another approach is to proxy authentication requests to a separate web server like Nginx or Jetty. The web server handles the authentication process and passes the authenticated requests to the HAPI FHIR server.
 
