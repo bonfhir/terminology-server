@@ -1,4 +1,5 @@
 import YAML from "yaml";
+import Bun from "bun";
 
 export const FHIR_VERSIONS = ["R3", "R4", "R4B", "R5"] as const;
 export type FHIRVersion = (typeof FHIR_VERSIONS)[number];

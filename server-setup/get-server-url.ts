@@ -1,6 +1,7 @@
 #! /usr/bin/bun
 
 import { readConfigFile } from "./code-system-configs.ts";
+import Bun from "bun";
 
 const config = await readConfigFile();
 

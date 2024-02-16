@@ -1,4 +1,5 @@
 #! /usr/bin/bun
+import Bun from "bun";
 
 import {
   type CodeSystemConfigEntry,
