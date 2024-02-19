@@ -7,18 +7,22 @@ _mounts/terminologies/icd10cm-tabular-2023.xml_
 ### declare your code systems
 
 - `id`: the code-system identifier
-- `version`: code system FHIR version
+- `type`: upload-terminology
 - `source`: the mounted code-system source file
 
-_mounts/configs/code-systems.yml_
+_mounts/configs/bonfhir-hapi.yml_
 ```
 server:
   url: http://localhost:8080/fhir
-code-systems:
-  - id: http://hl7.org/fhir/sid/icd-10-cm
-    version: r4
+  version: r4
+tasks:
+  - type: upload-definitions
+  - type: upload-terminology
+    id: http://hl7.org/fhir/sid/icd-10-cm
     source: icd10cm-tabular-2023.xml
 ```
+
+_when uploading terminologies, make sure to precede them with a 'upload-definitions' task like in the above example, which prepares the server with the required code definitions_
 
 ### build & run the docker image
 

@@ -2,5 +2,6 @@ terminologies/data/*
 
 mounts/**
 !mounts/configs/application.yml
+!mounts/configs/bonfhir-hapi.example.yml
 
 **/node_modules
