@@ -9,7 +9,6 @@ const serverUrl = config.server.url;
 const tasks = config.tasks;
 
 await serverIsReady(serverUrl);
-console.log("Server is ready!");
 
 for (const task of tasks) {
   await handleTask(config.server, task);
@@ -18,14 +17,15 @@ for (const task of tasks) {
 async function serverIsReady(serverUrl: string) {
   while (true) {
     try {
-      const response = await Bun.fetch(serverUrl + "/metadata", {
+      const response = await fetch(serverUrl + "/metadata", {
         headers: { accept: "application/fhir+json" },
       });
       if (response.ok) {
+        console.log("\n🏁 Server is ready! 🏁\n");
         return;
       }
     } catch (error) {
-      console.log("Server not ready yet, retrying in 5 seconds...");
+      console.log("\n⏳ Server not ready yet, retrying in 5 seconds...\n");
       await Bun.sleep(5000);
     }
   }
