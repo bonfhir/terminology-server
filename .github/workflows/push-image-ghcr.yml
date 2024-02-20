@@ -22,9 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Auto Bump
-        run: ./server-setup/bump-version.sh ${{inputs.bump-version}}
+        run: ./scripts/bump-version.sh ${{inputs.bump-version}}
       - uses: stefanzweifel/git-auto-commit-action@v5
   push-store-image:
+    needs: bump-version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
