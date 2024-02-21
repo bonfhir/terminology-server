@@ -1,15 +1,15 @@
 # syntax=docker/dockerfile:1
 
-FROM debian:bookworm-slim AS build-bonfhir
+FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS build-bonfhir
 
 RUN apt-get update && apt-get upgrade && apt-get install -y curl unzip
 RUN mkdir -p /usr/src/hapi-fhir-cli \
   && curl -SL https://github.com/hapifhir/hapi-fhir/releases/download/v6.10.3/hapi-fhir-6.10.3-cli.zip -o hapi-fhir-6.10.3-cli.zip \
   && unzip -q hapi-fhir-6.10.3-cli.zip -d /usr/src/hapi-fhir-cli
 
-FROM oven/bun AS bun
-FROM hapiproject/hapi:latest AS hapi-distroless
-FROM hapiproject/hapi:latest-tomcat AS bonfhir-hapi
+FROM --platform=$BUILDPLATFORM oven/bun AS bun
+FROM --platform=$BUILDPLATFORM hapiproject/hapi:latest AS hapi-distroless
+FROM --platform=$BUILDPLATFORM hapiproject/hapi:latest-tomcat AS bonfhir-hapi
 
 USER root
 RUN groupadd -g 1001 bonfhir
