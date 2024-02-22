@@ -1,6 +1,12 @@
 import { $ } from "bun";
 
 import { type ConfigTaskEntry, type ConfigServer } from "./configs.js";
+import {
+  createApplicationImportAuditEvent,
+  isTerminologySourceImported,
+  makeAuditEventEntity,
+} from "./audit-event-functions.js";
+import { FetchFhirClient, type FhirClient } from "@bonfhir/core/r4b";
 
 const TERMINOLOGIES_DATA_BASEPATH = "/terminologies/data/";
 
@@ -12,10 +18,38 @@ const handlers = {
     console.log(
       `📤 Uploading definition for FHIR version ${server.version}...`
     );
+
+    const client: FhirClient = new FetchFhirClient({
+      baseUrl: server.url,
+    });
+
+    if (
+      await isTerminologySourceImported(client, {
+        source: "definitions",
+        system: "definitions",
+        version: "r4",
+      })
+    ) {
+      console.log(
+        `ℹ️ definitions for FHIR version ${server.version} already ingested`
+      );
+      return;
+    }
+
     const { stdout, stderr, exitCode } =
       await $`hapi-fhir-cli upload-definitions -t "${server.url}" -v "${server.version}"`;
 
     logResults(stdout, stderr, exitCode);
+
+    createApplicationImportAuditEvent(
+      client,
+      makeAuditEventEntity({
+        source: "definitions",
+        system: "definitions",
+        version: "r4",
+      }),
+      exitCode === 0 ? "0" : "8"
+    );
   },
 
   "upload-terminology": async (server: ConfigServer, task: ConfigTaskEntry) => {
@@ -26,10 +60,36 @@ const handlers = {
     const dataType = task.id;
     const dataVersion = server.version;
 
+    const client: FhirClient = new FetchFhirClient({
+      baseUrl: server.url,
+    });
+
+    if (
+      await isTerminologySourceImported(client, {
+        source: dataSource,
+        system: dataType,
+        version: dataVersion,
+      })
+    ) {
+      console.log(
+        `ℹ️ Code system ${task.id} version ${server.version} from ${task.source} already ingested`
+      );
+      return;
+    }
+
     const { stdout, stderr, exitCode } =
       await $`hapi-fhir-cli upload-terminology -d "${TERMINOLOGIES_DATA_BASEPATH}${dataSource}" -v "${dataVersion}" -t "${server.url}" -u "${dataType}"`;
-
     logResults(stdout, stderr, exitCode);
+
+    createApplicationImportAuditEvent(
+      client,
+      makeAuditEventEntity({
+        source: dataSource,
+        system: dataType,
+        version: dataVersion,
+      }),
+      exitCode === 0 ? "0" : "8"
+    );
   },
 };
 

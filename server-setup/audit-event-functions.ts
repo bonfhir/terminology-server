@@ -7,7 +7,7 @@ import {
   type FhirClient,
   type Retrieved,
   type AuditEventEntity,
-  FetchFhirClient,
+  type AuditEventOutcome,
 } from "@bonfhir/core/r4b";
 
 // Audit Event Success Token
@@ -30,18 +30,19 @@ export async function getApplicationImportAuditEvent(
         system: "http://dicom.nema.org/resources/ontology/DCM",
         code: "110107",
       };
-      return search.outcome(SUCCESS).type(importOntology);
+      return search.outcome("0").type(importOntology);
     });
     return bundle.bundle.entry?.[0].resource;
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching audit event", error);
     return undefined;
   }
 }
 
 export async function createApplicationImportAuditEvent(
   client: FhirClient,
-  entity: AuditEventEntity[]
+  entity: AuditEventEntity,
+  outcome: AuditEventOutcome = SUCCESS
 ): Promise<Retrieved<AuditEvent>> {
   const source: AuditEventSource = {
     observer: {
@@ -72,10 +73,10 @@ export async function createApplicationImportAuditEvent(
     type,
     action,
     recorded: new Date().toISOString(),
-    outcome: SUCCESS,
+    outcome,
     agent: makeApplicationAgent(),
     source,
-    entity,
+    entity: [entity],
   };
 
   return await client.create(auditEvent);
@@ -105,13 +106,6 @@ export function makeApplicationAgent(): AuditEventAgent[] {
       requestor: false,
     },
   ];
-}
-
-// builder function for audit event entities
-export function makeAuditEventEntities(
-  sources: TerminologySource[]
-): AuditEventEntity[] {
-  return sources.map(makeAuditEventEntity);
 }
 
 // builder function for audit event entity
@@ -148,7 +142,7 @@ export function makeAuditEventEntity({
 }
 
 // test if terminology source is already imported
-async function isTerminologySourceImported(
+export async function isTerminologySourceImported(
   client: FhirClient,
   source: TerminologySource
 ): Promise<boolean> {
@@ -157,59 +151,4 @@ async function isTerminologySourceImported(
     return false;
   }
   return (event.entity ?? []).some((e) => e.name === source.system);
-}
-
-// test if all terminology sources are already imported
-export async function areTerminologySourcesImported(
-  client: FhirClient,
-  sources: TerminologySource[] | undefined
-): Promise<boolean | undefined> {
-  if (sources === undefined) return Promise.resolve(false);
-
-  return Promise.all(
-    sources.map((source) => isTerminologySourceImported(client, source))
-  )
-    .then((results) => results.every((result) => result === true))
-    .catch((error) => {
-      console.error(error);
-      return false;
-    });
-}
-
-try {
-  // create a new FHIR client
-  const client: FhirClient = new FetchFhirClient({
-    baseUrl: "http://localhost:8080/fhir/",
-  });
-
-  // payload to create the audit event
-  const sources = [
-    {
-      source: "LV264.zip",
-      system: "http://hl7.org/fhir/sid/icd-10-cm",
-      version: "R4",
-    },
-    {
-      source: "SNOMED_CT354.zip",
-      system: "http://snomed.info/sct",
-      version: "R4",
-    },
-  ];
-
-  // create an audit event
-  const event = await createApplicationImportAuditEvent(
-    client,
-    makeAuditEventEntities(sources)
-  );
-  console.log(`ID: ${event.id}`);
-
-  // get application audit event
-  const event2 = await getApplicationImportAuditEvent(client);
-  console.log(`ID: ${event2?.id}`);
-
-  // test if terminology sources are already imported
-  const test = await areTerminologySourcesImported(client, sources);
-  console.log(`Test: ${test}`);
-} catch (error) {
-  console.error(error);
 }

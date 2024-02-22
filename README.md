@@ -10,7 +10,7 @@ _mounts/terminologies/icd10cm-tabular-2023.xml_
 - `type`: upload-terminology
 - `source`: the mounted code-system source file
 
-_mounts/configs/code-systems.yml_
+_mounts/configs/bonfhir-hapi.yml_
 
 ```
 server:
