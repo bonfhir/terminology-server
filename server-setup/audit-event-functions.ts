@@ -8,6 +8,7 @@ import {
   type Retrieved,
   type AuditEventEntity,
   type AuditEventOutcome,
+  FetchFhirClient,
 } from "@bonfhir/core/r4b";
 
 // Audit Event Success Token
@@ -21,8 +22,11 @@ export type TerminologySource = {
 };
 
 export async function getApplicationImportAuditEvent(
-  client: FhirClient
+  baseUrl: string
 ): Promise<Retrieved<AuditEvent> | undefined> {
+  const client: FhirClient = new FetchFhirClient({
+    baseUrl,
+  });
   // TODO: this should return all matching audit event and we need to parse the entity detail to match
   try {
     const bundle = await client.search("AuditEvent", (search) => {
@@ -40,15 +44,19 @@ export async function getApplicationImportAuditEvent(
 }
 
 export async function createApplicationImportAuditEvent(
-  client: FhirClient,
-  entity: AuditEventEntity,
+  baseUrl: string,
+  entitySource: TerminologySource,
   outcome: AuditEventOutcome = SUCCESS
 ): Promise<Retrieved<AuditEvent>> {
+  const client: FhirClient = new FetchFhirClient({
+    baseUrl,
+  });
+
   const source: AuditEventSource = {
     observer: {
       identifier: {
         system: "urn:ietf:rfc:3986",
-        value: "",
+        value: baseUrl,
       },
     },
     type: [
@@ -76,7 +84,7 @@ export async function createApplicationImportAuditEvent(
     outcome,
     agent: makeApplicationAgent(),
     source,
-    entity: [entity],
+    entity: [makeAuditEventEntity(entitySource)],
   };
 
   return await client.create(auditEvent);
@@ -109,7 +117,7 @@ export function makeApplicationAgent(): AuditEventAgent[] {
 }
 
 // builder function for audit event entity
-export function makeAuditEventEntity({
+function makeAuditEventEntity({
   source,
   system,
   version,
@@ -143,10 +151,10 @@ export function makeAuditEventEntity({
 
 // test if terminology source is already imported
 export async function isTerminologySourceImported(
-  client: FhirClient,
+  baseUrl: string,
   source: TerminologySource
 ): Promise<boolean> {
-  const event = await getApplicationImportAuditEvent(client);
+  const event = await getApplicationImportAuditEvent(baseUrl);
   if (event === undefined) {
     return false;
   }

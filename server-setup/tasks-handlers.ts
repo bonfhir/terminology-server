@@ -4,9 +4,7 @@ import { type ConfigTaskEntry, type ConfigServer } from "./configs.js";
 import {
   createApplicationImportAuditEvent,
   isTerminologySourceImported,
-  makeAuditEventEntity,
 } from "./audit-event-functions.js";
-import { FetchFhirClient, type FhirClient } from "@bonfhir/core/r4b";
 
 const TERMINOLOGIES_DATA_BASEPATH = "/terminologies/data/";
 
@@ -19,12 +17,8 @@ const handlers = {
       `📤 Uploading definition for FHIR version ${server.version}...`
     );
 
-    const client: FhirClient = new FetchFhirClient({
-      baseUrl: server.url,
-    });
-
     if (
-      await isTerminologySourceImported(client, {
+      await isTerminologySourceImported(server.url, {
         source: "definitions",
         system: "definitions",
         version: "r4",
@@ -42,12 +36,12 @@ const handlers = {
     logResults(stdout, stderr, exitCode);
 
     createApplicationImportAuditEvent(
-      client,
-      makeAuditEventEntity({
+      server.url,
+      {
         source: "definitions",
         system: "definitions",
         version: "r4",
-      }),
+      },
       exitCode === 0 ? "0" : "8"
     );
   },
@@ -60,12 +54,8 @@ const handlers = {
     const dataType = task.id;
     const dataVersion = server.version;
 
-    const client: FhirClient = new FetchFhirClient({
-      baseUrl: server.url,
-    });
-
     if (
-      await isTerminologySourceImported(client, {
+      await isTerminologySourceImported(server.url, {
         source: dataSource,
         system: dataType,
         version: dataVersion,
@@ -82,12 +72,12 @@ const handlers = {
     logResults(stdout, stderr, exitCode);
 
     createApplicationImportAuditEvent(
-      client,
-      makeAuditEventEntity({
+      server.url,
+      {
         source: dataSource,
         system: dataType,
         version: dataVersion,
-      }),
+      },
       exitCode === 0 ? "0" : "8"
     );
   },
