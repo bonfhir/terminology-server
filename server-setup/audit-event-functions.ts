@@ -175,10 +175,11 @@ export async function isTerminologySourceImported(
       entity.name === source.system &&
       (entity.detail ?? []).some(
         (d) =>
+          d.type === "results" &&
           d.valueBase64Binary ===
-          btoa(
-            JSON.stringify({ source: source.source, version: source.version })
-          )
+            btoa(
+              JSON.stringify({ source: source.source, version: source.version })
+            )
       )
   );
 }
