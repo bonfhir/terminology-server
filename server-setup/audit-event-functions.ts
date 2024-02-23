@@ -21,22 +21,33 @@ export type TerminologySource = {
   version: string;
 };
 
-export async function getApplicationImportAuditEvent(
+const cache = new Map<string, Retrieved<AuditEvent>[] | undefined>();
+
+export async function getApplicationImportAuditEvents(
   baseUrl: string
-): Promise<Retrieved<AuditEvent> | undefined> {
+): Promise<Retrieved<AuditEvent>[] | undefined> {
   const client: FhirClient = new FetchFhirClient({
     baseUrl,
   });
-  // TODO: this should return all matching audit event and we need to parse the entity detail to match
+
+  const importOntology: Coding = {
+    system: "http://dicom.nema.org/resources/ontology/DCM",
+    code: "110107",
+  };
+  const cacheKey = [importOntology.system, importOntology.code].join("|");
+
+  if (cache.has(cacheKey)) {
+    return Promise.resolve(cache.get(cacheKey));
+  }
   try {
-    const bundle = await client.search("AuditEvent", (search) => {
-      const importOntology: Coding = {
-        system: "http://dicom.nema.org/resources/ontology/DCM",
-        code: "110107",
-      };
-      return search.outcome("0").type(importOntology);
-    });
-    return bundle.bundle.entry?.[0].resource;
+    const result = await client.search("AuditEvent", (search) =>
+      search.outcome("0").type(importOntology)
+    );
+    const events: Retrieved<AuditEvent>[] | undefined = result.bundle.entry
+      ?.flatMap((e) => e.resource as Retrieved<AuditEvent>)
+      .filter(Boolean);
+    cache.set(cacheKey, events);
+    return events;
   } catch (error) {
     console.error("Error fetching audit event", error);
     return undefined;
@@ -154,9 +165,20 @@ export async function isTerminologySourceImported(
   baseUrl: string,
   source: TerminologySource
 ): Promise<boolean> {
-  const event = await getApplicationImportAuditEvent(baseUrl);
-  if (event === undefined) {
+  const events = await getApplicationImportAuditEvents(baseUrl);
+  if (events === undefined) {
     return false;
   }
-  return (event.entity ?? []).some((e) => e.name === source.system);
+  return (events.flatMap((event) => event.entity) ?? []).some(
+    (entity) =>
+      entity !== undefined &&
+      entity.name === source.system &&
+      (entity.detail ?? []).some(
+        (d) =>
+          d.valueBase64Binary ===
+          btoa(
+            JSON.stringify({ source: source.source, version: source.version })
+          )
+      )
+  );
 }
