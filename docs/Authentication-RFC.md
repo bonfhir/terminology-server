@@ -2,7 +2,7 @@
 
 1. Introduction
 
-   Briefly introduces the context of the document, focusing on the Terminology Server built using HAPI FHIR for healthcare applications.
+   Briefly introduces the context of the document.
 
 2. Authentication Mechanisms Overview
 
