@@ -226,3 +226,7 @@ hapi:
 #  protocol: 'http'
 #  schema_management_strategy: CREATE
 #  username: SomeUsername
+
+server:
+  tomcat:
+    relaxed-query-chars: ["|", "[", "]"]
