@@ -4,9 +4,13 @@ export const FHIR_VERSIONS = ["R3", "R4", "R4B", "R5"] as const;
 export type FHIRVersion = (typeof FHIR_VERSIONS)[number];
 
 export type ConfigTaskEntry = {
-  type: "upload-definitions" | "upload-terminology";
+  type:
+    | "upload-definitions"
+    | "upload-terminology"
+    | "upload-terminology-plugin";
   id: string;
   source: string;
+  plugin?: string;
 };
 export type ConfigServer = {
   url: string;

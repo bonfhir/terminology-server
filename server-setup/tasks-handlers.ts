@@ -5,14 +5,31 @@ import {
   createApplicationImportAuditEvent,
   isTerminologySourceImported,
 } from "./audit-event-functions.js";
+import { RxNormPlugin } from "../plugins/rxnorm/index.js";
 
 const TERMINOLOGIES_DATA_BASEPATH = "/terminologies/data/";
 
-const handlers = {
-  "upload-definitions": async (
+export type Outcome = "0" | "8";
+
+// TODO: proper plugin system
+interface Plugin {
+  name: string;
+
+  uploadTerminology: (
     server: ConfigServer,
-    _task: ConfigTaskEntry
-  ) => {
+    task: ConfigTaskEntry
+  ) => Promise<Outcome>;
+}
+const plugins: Plugin[] = [new RxNormPlugin()];
+
+interface Handler {
+  server: ConfigServer;
+  task: ConfigTaskEntry;
+  plugin?: Plugin;
+}
+
+const handlers = {
+  "upload-definitions": async ({ server }: Handler) => {
     console.log(
       `📤 Uploading definition for FHIR version ${server.version}...`
     );
@@ -46,10 +63,11 @@ const handlers = {
     );
   },
 
-  "upload-terminology": async (server: ConfigServer, task: ConfigTaskEntry) => {
+  "upload-terminology": async ({ server, task }: Handler) => {
     console.log(
       `📤 Ingesting code system ${task.id} version ${server.version} from ${task.source}...`
     );
+
     const dataSource = task.source;
     const dataType = task.id;
     const dataVersion = server.version;
@@ -81,13 +99,50 @@ const handlers = {
       exitCode === 0 ? "0" : "8"
     );
   },
+
+  "upload-terminology-plugin": async ({ server, task, plugin }: Handler) => {
+    console.log(
+      `📤 Ingesting code system ${task.id} version ${server.version} from ${task.source}...`
+    );
+
+    const dataSource = task.source;
+    const dataType = task.id;
+    const dataVersion = server.version;
+
+    if (
+      await isTerminologySourceImported(server.url, {
+        source: dataSource,
+        system: dataType,
+        version: dataVersion,
+      })
+    ) {
+      console.log(
+        `ℹ️ Code system ${task.id} version ${server.version} from ${task.source} already ingested`
+      );
+      return;
+    }
+
+    const exitCode = (await plugin?.uploadTerminology(server, task)) ?? "8";
+
+    createApplicationImportAuditEvent(
+      server.url,
+      {
+        source: dataSource,
+        system: dataType,
+        version: dataVersion,
+      },
+      exitCode
+    );
+  },
 };
 
 export async function handleTask(server: ConfigServer, task: ConfigTaskEntry) {
   console.log(`▶️ Handling task of type ${task.type}...`);
   const handler = handlers[task.type];
+  const plugin = plugins.find((p) => p.name === task.plugin);
+
   if (handler) {
-    return handler(server, task);
+    return handler({ server, task, plugin });
   }
   console.log(`⛔ No handler for task type ${task.type}`);
 }

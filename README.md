@@ -12,7 +12,7 @@ _mounts/terminologies/icd10cm-tabular-2023.xml_
 
 _mounts/configs/bonfhir-hapi.yml_
 
-```
+```yml
 server:
   url: http://localhost:8080/fhir
   version: r4
@@ -27,25 +27,40 @@ _when uploading terminologies, make sure to precede them with a 'upload-definiti
 
 ### build & run the docker image
 
-`./build-and-run-docker-image.sh`
+```sh
+./build-and-run-docker-image.sh
+```
 
 ## Running HAPI server from source
 
 ### Install prerequisites
 
-```
+```sh
 brew install maven
 ```
 
 ### Clone the Starter project
 
-```
+```sh
 git clone git@github.com:hapifhir/hapi-fhir-jpaserver-starter.git
 ```
 
 ### Run the HAPI server using Jetty
 
-```
+```sh
 cd hapi-fhir-jpaserver-starter
 mvn -Pjetty jetty:run
 ```
+
+## Integrating custom terminologies
+
+Add a new `upload-terminology-plugin` task to the `bonfhir-hapi.yml` configuration file, specifying the `id` of the terminology, the `source` file, and the `plugin` to use for processing the terminology.
+
+```yml
+- type: upload-terminology-plugin
+    id: http://www.nlm.nih.gov/research/umls/rxnorm
+    source: RxNorm_full_03042024.zip
+    plugin: rxnorm
+```
+
+Create a new plugin package for your plugin. You can copy the rxnorm plugin as base.
