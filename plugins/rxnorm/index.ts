@@ -17,7 +17,7 @@ export class RxNormPlugin implements TerminologyPlugin {
       `📤 Uploading RxNorm code system ${task.id} version ${server.version} from ${task.source}...`
     );
 
-    const path = "../../mounts/terminologies/data/";
+    const path = "/terminologies/data/";
     const destination = "/tmp/rxnorm";
 
     await this.unzipRxNormFiles(task.source, destination, path);
@@ -55,21 +55,24 @@ export class RxNormPlugin implements TerminologyPlugin {
   }
 
   private async translateRxNormFiles(path: string) {
-    // TODO: We'll need to repeat these steps for each code file in the RxNorm zip
     const records: string[][] = await parse(
-      await Bun.file(`${path}/rrf/RXNATOMARCHIVE.RRF`).text(),
+      // we probably only need to parse RXNCONSO.RRF for now
+      await Bun.file(`${path}/rrf/RXNCONSO.RRF`).text(),
       {
         delimiter: "|",
         skip_empty_lines: true,
+        escape: null,
+        quote: null,
       }
     );
 
     const translatedRecords = records.map((record) => {
-      // 6 = Code, 2 = Str
-      return { code: record[6], display: record[2] };
+      // 0 = RXCUI, 14 = Str
+      return { code: record[0], display: record[14] };
     });
 
-    // NOTE: RxNorm seems to have code duplication, and HAPI won't ingest custom vocabularies with duplicate codes
+    // NOTE: RRF files have code duplication by design, and HAPI won't ingest custom vocabularies with duplicate codes
+    // we'll choose to keep the first occurrence of each code for now
     const uniq = (
       arr: Array<{ code: string; display: string }>,
       track = new Set()
