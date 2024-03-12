@@ -2,7 +2,7 @@
 
 ### download & mount code system sources
 
-_mounts/terminologies/icd10cm-tabular-2023.xml_
+_mounts/terminologies/data/icd10cm-tabular-2023.xml_
 
 ### declare your code systems
 
@@ -64,3 +64,10 @@ Add a new `upload-terminology-plugin` task to the `bonfhir-hapi.yml` configurati
 ```
 
 Create a new plugin package for your plugin. You can copy the rxnorm plugin as base.
+
+```yml
+- type: upload-terminology-plugin
+    id: https://www.cms.gov/Medicare/Coding/HCPCSReleaseCodeSets
+    source: 2024_DHS_Code_List_Addendum_03_01_2024.zip
+    plugin: cpt-hcpcs
+```

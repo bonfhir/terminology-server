@@ -6,6 +6,7 @@ import {
   isTerminologySourceImported,
 } from "./audit-event-functions.js";
 import { RxNormPlugin } from "../plugins/rxnorm/index.js";
+import { CPTHCPCSPlugin } from "../plugins/cpt-hcpcs/index.js";
 
 const TERMINOLOGIES_DATA_BASEPATH = "/terminologies/data/";
 
@@ -20,7 +21,8 @@ interface Plugin {
     task: ConfigTaskEntry
   ) => Promise<Outcome>;
 }
-const plugins: Plugin[] = [new RxNormPlugin()];
+// TODO: autoload /plugins ?
+const plugins: Plugin[] = [new RxNormPlugin(), new CPTHCPCSPlugin()];
 
 interface Handler {
   server: ConfigServer;

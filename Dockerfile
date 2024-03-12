@@ -32,6 +32,7 @@ ADD --chown=1001:1001 ./plugins /bonfhir/plugins/
 USER bonfhir
 RUN cd /bonfhir/server-setup && bun install
 RUN cd /bonfhir/plugins/rxnorm && bun install
+RUN cd /bonfhir/plugins/cpt-hcpcs && bun install
 
 USER root
 
