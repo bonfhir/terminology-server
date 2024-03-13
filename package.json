@@ -1,0 +1,24 @@
+{
+  "name": "terminology-server",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "workspaces": [
+    "plugins/*",
+    "packages/*"
+  ],
+  "paths": {
+    "@terminology-server/*": [
+      "packages/*",
+      "plugins/*"
+    ]
+  },
+  "scripts": {
+    "start": "bun run index.ts"
+  }
+}

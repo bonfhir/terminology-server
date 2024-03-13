@@ -26,13 +26,13 @@ COPY --chown=1001:1001 --from=build-bonfhir /usr/src/hapi-fhir-cli /usr/bin/
 COPY --chown=1001:1001 --from=hapi-distroless /app /app
 
 COPY --chown=1001:1001 --from=bun  /usr/local/bin/bun /usr/bin/
-ADD --chown=1001:1001 ./server-setup /bonfhir/server-setup/
+ADD --chown=1001:1001 ./package.json /bonfhir/
+ADD --chown=1001:1001 ./index.ts /bonfhir/
+ADD --chown=1001:1001 ./packages /bonfhir/packages/
 ADD --chown=1001:1001 ./plugins /bonfhir/plugins/
 
 USER bonfhir
-RUN cd /bonfhir/server-setup && bun install
-RUN cd /bonfhir/plugins/rxnorm && bun install
-RUN cd /bonfhir/plugins/cpt-hcpcs && bun install
+RUN cd /bonfhir && bun install
 
 USER root
 

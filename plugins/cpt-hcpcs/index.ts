@@ -1,23 +1,30 @@
-import type { TerminologyPlugin } from "..";
+import type { TerminologyPlugin } from "terminology-server-setup/terminology-plugin";
 import { codeSystem } from "./code-system";
 import { stringify } from "csv-stringify/sync";
-import type { ConfigServer, ConfigTaskEntry } from "../../server-setup/configs";
-import type { Outcome } from "../../server-setup/tasks-handlers";
-import { packageCustomVocabulary, unzipFiles, uploadFiles } from "../utils";
+import type {
+  ConfigServer,
+  ConfigTaskEntry,
+} from "terminology-server-setup/configs";
+
+import {
+  packageCustomVocabulary,
+  unzipFiles,
+  uploadFiles,
+} from "terminology-server-setup/utils";
 import XLSX from "xlsx";
-import { file } from "bun";
+import type { AuditEventOutcome } from "@bonfhir/core/r4b";
 
 interface CPTHCPCSRecord {
   __EMPTY: string;
   __EMPTY_1: string;
 }
 
-export class CPTHCPCSPlugin implements TerminologyPlugin {
+export default class CPTHCPCSPlugin implements TerminologyPlugin {
   name = "cpt-hcpcs";
   async uploadTerminology(
     server: ConfigServer,
     task: ConfigTaskEntry
-  ): Promise<Outcome> {
+  ): Promise<AuditEventOutcome> {
     console.log(
       `📤 Uploading CPT/HCPCS code system ${task.id} version ${server.version} from ${task.source}...`
     );

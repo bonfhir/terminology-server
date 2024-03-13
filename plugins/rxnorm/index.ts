@@ -1,17 +1,25 @@
-import type { TerminologyPlugin } from "..";
+import type { TerminologyPlugin } from "terminology-server-setup/terminology-plugin";
 import { codeSystem } from "./code-system";
 import { stringify } from "csv-stringify/sync";
 import { parse } from "csv-parse/sync";
-import type { ConfigServer, ConfigTaskEntry } from "../../server-setup/configs";
-import type { Outcome } from "../../server-setup/tasks-handlers";
-import { packageCustomVocabulary, unzipFiles, uploadFiles } from "../utils";
+import type {
+  ConfigServer,
+  ConfigTaskEntry,
+} from "terminology-server-setup/configs";
 
-export class RxNormPlugin implements TerminologyPlugin {
+import {
+  packageCustomVocabulary,
+  unzipFiles,
+  uploadFiles,
+} from "terminology-server-setup/utils";
+import type { AuditEventOutcome } from "@bonfhir/core/r4b";
+
+export default class RxNormPlugin implements TerminologyPlugin {
   name = "rxnorm";
   async uploadTerminology(
     server: ConfigServer,
     task: ConfigTaskEntry
-  ): Promise<Outcome> {
+  ): Promise<AuditEventOutcome> {
     console.log(
       `📤 Uploading RxNorm code system ${task.id} version ${server.version} from ${task.source}...`
     );

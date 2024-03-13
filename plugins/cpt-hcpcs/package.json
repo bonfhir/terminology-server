@@ -1,6 +1,5 @@
 {
   "name": "terminology-server-cpt-hcpcs",
-  "module": "cpt-hcpcs",
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest",

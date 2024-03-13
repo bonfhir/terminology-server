@@ -1,6 +1,5 @@
 {
   "name": "terminology-server-rxnorm",
-  "module": "rxnorm",
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest",
