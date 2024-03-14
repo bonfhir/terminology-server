@@ -1,15 +1,15 @@
-import {
-  type AuditEvent,
-  type AuditEventAgent,
-  type AuditEventSource,
-  type AuditEventAction,
-  type Coding,
-  type FhirClient,
-  type Retrieved,
-  type AuditEventEntity,
-  type AuditEventOutcome,
-  FetchFhirClient,
+import type {
+  AuditEvent,
+  AuditEventAgent,
+  AuditEventSource,
+  AuditEventAction,
+  Coding,
+  FhirClient,
+  Retrieved,
+  AuditEventEntity,
+  AuditEventOutcome,
 } from "@bonfhir/core/r4b";
+import { FetchFhirClient } from "@bonfhir/core/r4b";
 
 // Audit Event Success Token
 const SUCCESS = "0";
@@ -58,7 +58,7 @@ export async function createApplicationImportAuditEvent(
   baseUrl: string,
   entitySource: TerminologySource,
   outcome: AuditEventOutcome = SUCCESS
-): Promise<Retrieved<AuditEvent>> {
+) {
   const client: FhirClient = new FetchFhirClient({
     baseUrl,
   });

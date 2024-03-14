@@ -1,18 +1,22 @@
 import { $ } from "bun";
-
-import { type ConfigTaskEntry, type ConfigServer } from "./configs.js";
+import { type ConfigTaskEntry, type ConfigServer } from "./configs";
+import { logResults } from "./utils";
 import {
   createApplicationImportAuditEvent,
   isTerminologySourceImported,
-} from "./audit-event-functions.js";
+} from "./audit-event-functions";
+import { plugins } from "./terminology-plugin";
+import type { AuditEventOutcome } from "@bonfhir/core/r4b";
 
 const TERMINOLOGIES_DATA_BASEPATH = "/terminologies/data/";
 
+interface Handler {
+  server: ConfigServer;
+  task: ConfigTaskEntry;
+}
+
 const handlers = {
-  "upload-definitions": async (
-    server: ConfigServer,
-    _task: ConfigTaskEntry
-  ) => {
+  "upload-definitions": async ({ server }: Handler) => {
     console.log(
       `📤 Uploading definition for FHIR version ${server.version}...`
     );
@@ -46,14 +50,22 @@ const handlers = {
     );
   },
 
-  "upload-terminology": async (server: ConfigServer, task: ConfigTaskEntry) => {
+  "upload-terminology": async ({ server, task }: Handler) => {
     console.log(
       `📤 Ingesting code system ${task.id} version ${server.version} from ${task.source}...`
     );
+
+    const plugin = plugins.find((p) => p.name === task.plugin);
+    if (task.plugin && !plugin) {
+      console.error(`⛔ Plugin not found ${task.id}`);
+      return;
+    }
+
     const dataSource = task.source;
     const dataType = task.id;
     const dataVersion = server.version;
 
+    let outcome: AuditEventOutcome = "0";
     if (
       await isTerminologySourceImported(server.url, {
         source: dataSource,
@@ -67,40 +79,38 @@ const handlers = {
       return;
     }
 
-    const { stdout, stderr, exitCode } =
-      await $`hapi-fhir-cli upload-terminology -d "${TERMINOLOGIES_DATA_BASEPATH}${dataSource}" -v "${dataVersion}" -t "${server.url}" -u "${dataType}"`;
-    logResults(stdout, stderr, exitCode);
-
-    createApplicationImportAuditEvent(
-      server.url,
-      {
-        source: dataSource,
-        system: dataType,
-        version: dataVersion,
-      },
-      exitCode === 0 ? "0" : "8"
-    );
+    try {
+      if (plugin) {
+        await plugin.uploadTerminology(server, task);
+      } else {
+        const { stdout, stderr, exitCode } =
+          await $`hapi-fhir-cli upload-terminology -d "${TERMINOLOGIES_DATA_BASEPATH}${dataSource}" -v "${dataVersion}" -t "${server.url}" -u "${dataType}"`;
+        outcome = exitCode === 0 ? "0" : "8";
+        logResults(stdout, stderr, exitCode);
+      }
+    } catch (e) {
+      console.error(e);
+      outcome = "8";
+    } finally {
+      await createApplicationImportAuditEvent(
+        server.url,
+        {
+          source: dataSource,
+          system: dataType,
+          version: dataVersion,
+        },
+        outcome
+      );
+    }
   },
 };
 
 export async function handleTask(server: ConfigServer, task: ConfigTaskEntry) {
   console.log(`▶️ Handling task of type ${task.type}...`);
   const handler = handlers[task.type];
+
   if (handler) {
-    return handler(server, task);
+    return handler({ server, task });
   }
   console.log(`⛔ No handler for task type ${task.type}`);
-}
-
-function logResults(stdout: Buffer, stderr: Buffer, exitCode: number) {
-  if (exitCode !== 0) {
-    console.log("🦺 exitCode: ");
-    console.log(exitCode);
-
-    console.log("🚨 errors: ");
-    console.log(stderr.toString());
-  } else {
-    console.log("✅ Uploaded definitions");
-    console.log(stdout.toString());
-  }
 }

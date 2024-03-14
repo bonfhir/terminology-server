@@ -7,6 +7,7 @@ export type ConfigTaskEntry = {
   type: "upload-definitions" | "upload-terminology";
   id: string;
   source: string;
+  plugin?: string;
 };
 export type ConfigServer = {
   url: string;

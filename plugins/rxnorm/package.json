@@ -1,0 +1,16 @@
+{
+  "name": "terminology-server-rxnorm",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@bonfhir/core": "^2.18.0",
+    "csv": "^6.3.8",
+    "yaml": "^2.3.4"
+  }
+}
