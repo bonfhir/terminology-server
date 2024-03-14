@@ -5,7 +5,6 @@ import {
   createApplicationImportAuditEvent,
   isTerminologySourceImported,
 } from "./audit-event-functions";
-import type { Plugin } from "./terminology-plugin";
 import { plugins } from "./terminology-plugin";
 import type { AuditEventOutcome } from "@bonfhir/core/r4b";
 
@@ -14,7 +13,6 @@ const TERMINOLOGIES_DATA_BASEPATH = "/terminologies/data/";
 interface Handler {
   server: ConfigServer;
   task: ConfigTaskEntry;
-  plugin?: Plugin;
 }
 
 const handlers = {
@@ -52,10 +50,16 @@ const handlers = {
     );
   },
 
-  "upload-terminology": async ({ server, task, plugin }: Handler) => {
+  "upload-terminology": async ({ server, task }: Handler) => {
     console.log(
       `📤 Ingesting code system ${task.id} version ${server.version} from ${task.source}...`
     );
+
+    const plugin = plugins.find((p) => p.name === task.plugin);
+    if (task.plugin && !plugin) {
+      console.error(`⛔ Plugin not found ${task.id}`);
+      return;
+    }
 
     const dataSource = task.source;
     const dataType = task.id;
@@ -81,6 +85,7 @@ const handlers = {
       } else {
         const { stdout, stderr, exitCode } =
           await $`hapi-fhir-cli upload-terminology -d "${TERMINOLOGIES_DATA_BASEPATH}${dataSource}" -v "${dataVersion}" -t "${server.url}" -u "${dataType}"`;
+        outcome = exitCode === 0 ? "0" : "8";
         logResults(stdout, stderr, exitCode);
       }
     } catch (e) {
@@ -103,10 +108,9 @@ const handlers = {
 export async function handleTask(server: ConfigServer, task: ConfigTaskEntry) {
   console.log(`▶️ Handling task of type ${task.type}...`);
   const handler = handlers[task.type];
-  const plugin = plugins.find((p) => p.name === task.plugin);
 
   if (handler) {
-    return handler({ server, task, plugin });
+    return handler({ server, task });
   }
   console.log(`⛔ No handler for task type ${task.type}`);
 }
