@@ -7,6 +7,7 @@ export type ConfigTaskEntry = {
   type: "upload-definitions" | "upload-terminology";
   id: string;
   source: string;
+  plugin?: string;
 };
 export type ConfigServer = {
   url: string;
@@ -20,11 +21,17 @@ export type Config = {
 const CONFIG_PATH = "/configs/bonfhir-hapi.yml";
 
 export async function readConfigFile(): Promise<Config> {
-  const configFile = Bun.file(CONFIG_PATH);
-  const configFileString = await configFile.text();
-  const configs = YAML.parse(configFileString) as Config;
-  assertVersionSupport(configs.server.version);
-  return configs;
+  try {
+    const configFile = Bun.file(CONFIG_PATH);
+    const configFileString = await configFile.text();
+    const configs = YAML.parse(configFileString) as Config;
+    assertVersionSupport(configs.server.version);
+    return configs;
+  } catch (error) {
+    console.error(`\n🚧 Error while loading config file at ${CONFIG_PATH}`);
+    console.error(error);
+    process.exit(1);
+  }
 }
 
 function assertVersionSupport(fhirVersion: string) {

@@ -1,6 +1,5 @@
 {
-  "name": "terminology-server-scripts",
-  "module": "server-setup",
+  "name": "terminology-server-setup",
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest",
@@ -10,6 +9,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@bonfhir/core": "^2.18.0",
     "yaml": "^2.3.4"
   }
 }
