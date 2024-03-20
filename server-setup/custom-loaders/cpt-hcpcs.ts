@@ -1,25 +1,29 @@
-import type { TerminologyPlugin } from "terminology-server-setup/terminology-plugin";
-import { codeSystem } from "./code-system";
 import { stringify } from "csv-stringify/sync";
-import type {
-  ConfigServer,
-  ConfigTaskEntry,
-} from "terminology-server-setup/configs";
-
-import {
-  packageCustomVocabulary,
-  unzipFiles,
-  uploadFiles,
-} from "terminology-server-setup/utils";
 import XLSX from "xlsx";
 import type { AuditEventOutcome } from "@bonfhir/core/r4b";
+import type { CodeSystem } from "@bonfhir/core/r4b";
+
+import type { CustomLoader } from "./index";
+import type { ConfigServer, ConfigTaskEntry } from "@/configs";
+import { packageCustomVocabulary, unzipFiles, uploadFiles } from "@/utils";
+
+const codeSystem: Partial<CodeSystem> = {
+  resourceType: "CodeSystem",
+  url: "http://www.nlm.nih.gov/research/umls/rxnorm",
+  name: "RXNorm",
+  description:
+    "RxNorm is a normalized naming system for generic and branded drugs by the United States National Library of Medicine.",
+  status: "active",
+  publisher: "U.S. National Library of Medicine",
+  content: "not-present",
+};
 
 interface CPTHCPCSRecord {
   __EMPTY: string;
   __EMPTY_1: string;
 }
 
-export default class CPTHCPCSPlugin implements TerminologyPlugin {
+export default class CPTHCPCSLoader implements CustomLoader {
   name = "cpt-hcpcs";
   async uploadTerminology(
     server: ConfigServer,

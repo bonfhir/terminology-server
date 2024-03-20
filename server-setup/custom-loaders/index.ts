@@ -1,9 +1,10 @@
 import type { AuditEventOutcome } from "@bonfhir/core/r4b";
-import type { ConfigServer, ConfigTaskEntry } from "../server-setup/configs";
 import { readdir } from "fs/promises";
 import { join } from "path";
 
-export interface TerminologyPlugin {
+import type { ConfigServer, ConfigTaskEntry } from "@/configs";
+
+export interface CustomLoader {
   name: string;
   uploadTerminology(
     server: ConfigServer,
