@@ -5,16 +5,15 @@ export type FHIRVersion = (typeof FHIR_VERSIONS)[number];
 
 export type ConfigTaskEntry = {
   type: "upload-definitions" | "upload-terminology";
-  id: string;
+  system: string;
   source: string;
-  plugin?: string;
 };
-export type ConfigServer = {
+export type ServerConfig = {
   url: string;
   version: FHIRVersion;
 };
 export type Config = {
-  server: ConfigServer;
+  server: ServerConfig;
   tasks: ConfigTaskEntry[];
 };
 

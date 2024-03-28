@@ -35,14 +35,14 @@ export async function logResults(
   stderr: Buffer,
   exitCode: number
 ) {
-  if (exitCode !== 0) {
-    console.log("🦺 exitCode: ");
-    console.log(exitCode);
+  //if (exitCode !== 0) {
+  console.log("🦺 exitCode: ");
+  console.log(exitCode);
 
-    console.log("🚨 errors: ");
-    console.log(stderr.toString());
-  } else {
-    console.log("✅ Uploaded definitions");
-    console.log(stdout.toString());
-  }
+  console.log("🚨 errors: ");
+  console.log(stderr.toString());
+  //} else {
+  console.log("✅ Uploaded definitions");
+  console.log(stdout.toString());
+  //}
 }

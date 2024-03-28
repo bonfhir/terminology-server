@@ -4,8 +4,8 @@ import type { AuditEventOutcome } from "@bonfhir/core/r4b";
 import type { CodeSystem } from "@bonfhir/core/r4b";
 
 import type { CustomLoader } from "./index";
-import type { ConfigServer, ConfigTaskEntry } from "@/configs";
-import { packageCustomVocabulary, unzipFiles, uploadFiles } from "@/utils";
+import type { ServerConfig, ConfigTaskEntry } from "../configs";
+import { packageCustomVocabulary, unzipFiles, uploadFiles } from "../utils";
 
 const codeSystem: Partial<CodeSystem> = {
   resourceType: "CodeSystem",
@@ -19,13 +19,14 @@ const codeSystem: Partial<CodeSystem> = {
 };
 
 export default class RxNormLoader implements CustomLoader {
+  system = "http://www.nlm.nih.gov/research/umls/rxnorm";
   name = "rxnorm";
   async uploadTerminology(
-    server: ConfigServer,
+    server: ServerConfig,
     task: ConfigTaskEntry
   ): Promise<AuditEventOutcome> {
     console.log(
-      `📤 Uploading RxNorm code system ${task.id} version ${server.version} from ${task.source}...`
+      `📤 Uploading RxNorm code system ${task.system} version ${server.version} from ${task.source}...`
     );
 
     const path = "/terminologies/data/";
@@ -40,7 +41,7 @@ export default class RxNormLoader implements CustomLoader {
     await uploadFiles(
       server.url,
       server.version,
-      task.id,
+      task.system,
       "/tmp/rxnorm/rxnorm.zip"
     );
 

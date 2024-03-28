@@ -4,15 +4,15 @@ import type { AuditEventOutcome } from "@bonfhir/core/r4b";
 import type { CodeSystem } from "@bonfhir/core/r4b";
 
 import type { CustomLoader } from "./index";
-import type { ConfigServer, ConfigTaskEntry } from "@/configs";
-import { packageCustomVocabulary, unzipFiles, uploadFiles } from "@/utils";
+import type { ServerConfig, ConfigTaskEntry } from "../configs";
+import { packageCustomVocabulary, unzipFiles, uploadFiles } from "../utils";
 
 const codeSystem: Partial<CodeSystem> = {
   resourceType: "CodeSystem",
-  url: "http://www.nlm.nih.gov/research/umls/rxnorm",
-  name: "RXNorm",
+  url: "http://www.ama-assn.org/go/cpt",
+  name: "CPT/HCPCS",
   description:
-    "RxNorm is a normalized naming system for generic and branded drugs by the United States National Library of Medicine.",
+    "The Current Procedural Terminology (CPT) code set is a medical code set maintained by the American Medical Association (AMA) through the CPT Editorial Panel.",
   status: "active",
   publisher: "U.S. National Library of Medicine",
   content: "not-present",
@@ -24,13 +24,14 @@ interface CPTHCPCSRecord {
 }
 
 export default class CPTHCPCSLoader implements CustomLoader {
+  system = "http://www.ama-assn.org/go/cpt";
   name = "cpt-hcpcs";
   async uploadTerminology(
-    server: ConfigServer,
+    server: ServerConfig,
     task: ConfigTaskEntry
   ): Promise<AuditEventOutcome> {
     console.log(
-      `📤 Uploading CPT/HCPCS code system ${task.id} version ${server.version} from ${task.source}...`
+      `📤 Uploading CPT/HCPCS code system ${task.system} version ${server.version} from ${task.source}...`
     );
 
     const path = "/terminologies/data/";
@@ -46,7 +47,7 @@ export default class CPTHCPCSLoader implements CustomLoader {
     await uploadFiles(
       server.url,
       server.version,
-      task.id,
+      task.system,
       "/tmp/cpt-hcpcs/cpt-hcpcs.zip"
     );
 

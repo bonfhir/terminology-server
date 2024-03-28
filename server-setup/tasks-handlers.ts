@@ -1,31 +1,25 @@
 import { $ } from "bun";
 
-import { type ConfigTaskEntry, type ConfigServer } from "./configs.js";
+import { type ConfigTaskEntry, type ServerConfig } from "./configs";
 import {
   createApplicationImportAuditEvent,
   isTerminologySourceImported,
-} from "./audit-event-functions.js";
-import { RxNormPlugin } from "../plugins/rxnorm/index.js";
+} from "./audit-event-functions";
+import { customLoaders } from "./custom-loaders";
+import { exit } from "process";
 
 const TERMINOLOGIES_DATA_BASEPATH = "/terminologies/data/";
 
+const NATIVE_TERMINOLOGIES = [
+  "http://snomed.info/sct",
+  "http://loinc.org",
+  "http://hl7.org/fhir/sid/icd-10-cm",
+];
+
 export type Outcome = "0" | "8";
-
-// TODO: proper plugin system
-interface Plugin {
-  name: string;
-
-  uploadTerminology: (
-    server: ConfigServer,
-    task: ConfigTaskEntry
-  ) => Promise<Outcome>;
-}
-const plugins: Plugin[] = [new RxNormPlugin()];
-
 interface Handler {
-  server: ConfigServer;
+  server: ServerConfig;
   task: ConfigTaskEntry;
-  plugin?: Plugin;
 }
 
 const handlers = {
@@ -65,84 +59,52 @@ const handlers = {
 
   "upload-terminology": async ({ server, task }: Handler) => {
     console.log(
-      `📤 Ingesting code system ${task.id} version ${server.version} from ${task.source}...`
+      `📤 Ingesting code system ${task.system} version ${server.version} from ${task.source}...`
     );
-
-    const dataSource = task.source;
-    const dataType = task.id;
-    const dataVersion = server.version;
 
     if (
       await isTerminologySourceImported(server.url, {
-        source: dataSource,
-        system: dataType,
-        version: dataVersion,
+        source: task.source,
+        system: task.system,
+        version: server.version,
       })
     ) {
       console.log(
-        `ℹ️ Code system ${task.id} version ${server.version} from ${task.source} already ingested`
+        `ℹ️ Code system ${task.system} version ${server.version} from ${task.source} already ingested`
       );
       return;
     }
 
-    const { stdout, stderr, exitCode } =
-      await $`hapi-fhir-cli upload-terminology -d "${TERMINOLOGIES_DATA_BASEPATH}${dataSource}" -v "${dataVersion}" -t "${server.url}" -u "${dataType}"`;
-    logResults(stdout, stderr, exitCode);
+    let exitCode: number;
+    if (isNativeTerminology(task.system)) {
+      exitCode = await ingestNativeTerminology(server, task);
+    } else {
+      const loader = getCustomTerminology(task.system);
+
+      if (!loader) {
+        console.log(`⛔ No loader found for ${task.system}`);
+        exitCode = 8;
+      } else exitCode = Number(await loader.uploadTerminology(server, task));
+    }
 
     createApplicationImportAuditEvent(
       server.url,
       {
-        source: dataSource,
-        system: dataType,
-        version: dataVersion,
+        source: task.source,
+        system: task.system,
+        version: server.version,
       },
       exitCode === 0 ? "0" : "8"
     );
   },
-
-  "upload-terminology-plugin": async ({ server, task, plugin }: Handler) => {
-    console.log(
-      `📤 Ingesting code system ${task.id} version ${server.version} from ${task.source}...`
-    );
-
-    const dataSource = task.source;
-    const dataType = task.id;
-    const dataVersion = server.version;
-
-    if (
-      await isTerminologySourceImported(server.url, {
-        source: dataSource,
-        system: dataType,
-        version: dataVersion,
-      })
-    ) {
-      console.log(
-        `ℹ️ Code system ${task.id} version ${server.version} from ${task.source} already ingested`
-      );
-      return;
-    }
-
-    const exitCode = (await plugin?.uploadTerminology(server, task)) ?? "8";
-
-    createApplicationImportAuditEvent(
-      server.url,
-      {
-        source: dataSource,
-        system: dataType,
-        version: dataVersion,
-      },
-      exitCode
-    );
-  },
 };
 
-export async function handleTask(server: ConfigServer, task: ConfigTaskEntry) {
+export async function handleTask(server: ServerConfig, task: ConfigTaskEntry) {
   console.log(`▶️ Handling task of type ${task.type}...`);
   const handler = handlers[task.type];
-  const plugin = plugins.find((p) => p.name === task.plugin);
 
   if (handler) {
-    return handler({ server, task, plugin });
+    return handler({ server, task });
   }
   console.log(`⛔ No handler for task type ${task.type}`);
 }
@@ -158,4 +120,23 @@ function logResults(stdout: Buffer, stderr: Buffer, exitCode: number) {
     console.log("✅ Uploaded definitions");
     console.log(stdout.toString());
   }
+}
+
+function isNativeTerminology(system: string) {
+  return NATIVE_TERMINOLOGIES.includes(system);
+}
+
+async function ingestNativeTerminology(
+  server: ServerConfig,
+  task: ConfigTaskEntry
+) {
+  const { stdout, stderr, exitCode } =
+    await $`hapi-fhir-cli upload-terminology -d "${TERMINOLOGIES_DATA_BASEPATH}${task.source}" -v "${server.version}" -t "${server.url}" -u "${task.system}"`;
+  logResults(stdout, stderr, exitCode);
+
+  return exitCode;
+}
+
+function getCustomTerminology(system: string) {
+  return customLoaders.find((loader) => loader.system === system);
 }
