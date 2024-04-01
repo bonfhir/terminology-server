@@ -1,32 +1,37 @@
-import type { TerminologyPlugin } from "terminology-server-setup/terminology-plugin";
-import { codeSystem } from "./code-system";
 import { stringify } from "csv-stringify/sync";
-import type {
-  ConfigServer,
-  ConfigTaskEntry,
-} from "terminology-server-setup/configs";
-
-import {
-  packageCustomVocabulary,
-  unzipFiles,
-  uploadFiles,
-} from "terminology-server-setup/utils";
 import XLSX from "xlsx";
 import type { AuditEventOutcome } from "@bonfhir/core/r4b";
+import type { CodeSystem } from "@bonfhir/core/r4b";
+
+import type { CustomLoader } from "./index";
+import type { ServerConfig, ConfigTaskEntry } from "../configs";
+import { packageCustomVocabulary, unzipFiles, uploadFiles } from "../utils";
+
+const codeSystem: Partial<CodeSystem> = {
+  resourceType: "CodeSystem",
+  url: "http://www.ama-assn.org/go/cpt",
+  name: "CPT/HCPCS",
+  description:
+    "The Current Procedural Terminology (CPT) code set is a medical code set maintained by the American Medical Association (AMA) through the CPT Editorial Panel.",
+  status: "active",
+  publisher: "U.S. National Library of Medicine",
+  content: "not-present",
+};
 
 interface CPTHCPCSRecord {
   __EMPTY: string;
   __EMPTY_1: string;
 }
 
-export default class CPTHCPCSPlugin implements TerminologyPlugin {
+export default class CPTHCPCSLoader implements CustomLoader {
+  system = "http://www.ama-assn.org/go/cpt";
   name = "cpt-hcpcs";
   async uploadTerminology(
-    server: ConfigServer,
+    server: ServerConfig,
     task: ConfigTaskEntry
   ): Promise<AuditEventOutcome> {
     console.log(
-      `📤 Uploading CPT/HCPCS code system ${task.id} version ${server.version} from ${task.source}...`
+      `📤 Uploading CPT/HCPCS code system ${task.system} version ${server.version} from ${task.source}...`
     );
 
     const path = "/terminologies/data/";
@@ -42,7 +47,7 @@ export default class CPTHCPCSPlugin implements TerminologyPlugin {
     await uploadFiles(
       server.url,
       server.version,
-      task.id,
+      task.system,
       "/tmp/cpt-hcpcs/cpt-hcpcs.zip"
     );
 

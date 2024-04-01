@@ -1,27 +1,32 @@
-import type { TerminologyPlugin } from "terminology-server-setup/terminology-plugin";
-import { codeSystem } from "./code-system";
 import { stringify } from "csv-stringify/sync";
 import { parse } from "csv-parse/sync";
-import type {
-  ConfigServer,
-  ConfigTaskEntry,
-} from "terminology-server-setup/configs";
-
-import {
-  packageCustomVocabulary,
-  unzipFiles,
-  uploadFiles,
-} from "terminology-server-setup/utils";
 import type { AuditEventOutcome } from "@bonfhir/core/r4b";
+import type { CodeSystem } from "@bonfhir/core/r4b";
 
-export default class RxNormPlugin implements TerminologyPlugin {
+import type { CustomLoader } from "./index";
+import type { ServerConfig, ConfigTaskEntry } from "../configs";
+import { packageCustomVocabulary, unzipFiles, uploadFiles } from "../utils";
+
+const codeSystem: Partial<CodeSystem> = {
+  resourceType: "CodeSystem",
+  url: "http://www.nlm.nih.gov/research/umls/rxnorm",
+  name: "RXNorm",
+  description:
+    "RxNorm is a normalized naming system for generic and branded drugs by the United States National Library of Medicine.",
+  status: "active",
+  publisher: "U.S. National Library of Medicine",
+  content: "not-present",
+};
+
+export default class RxNormLoader implements CustomLoader {
+  system = "http://www.nlm.nih.gov/research/umls/rxnorm";
   name = "rxnorm";
   async uploadTerminology(
-    server: ConfigServer,
+    server: ServerConfig,
     task: ConfigTaskEntry
   ): Promise<AuditEventOutcome> {
     console.log(
-      `📤 Uploading RxNorm code system ${task.id} version ${server.version} from ${task.source}...`
+      `📤 Uploading RxNorm code system ${task.system} version ${server.version} from ${task.source}...`
     );
 
     const path = "/terminologies/data/";
@@ -36,7 +41,7 @@ export default class RxNormPlugin implements TerminologyPlugin {
     await uploadFiles(
       server.url,
       server.version,
-      task.id,
+      task.system,
       "/tmp/rxnorm/rxnorm.zip"
     );
 

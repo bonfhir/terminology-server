@@ -17,7 +17,7 @@ RUN useradd -u 1001 -g 1001 -s /bin/bash bonfhir
 
 RUN mkdir /bitnami/tomcat/webapps/target && chown -R 1001:1001 /bitnami/tomcat/webapps/target
 
-RUN apt update && apt install -y curl libncurses5-dev supervisor zip unzip  # libncurses5-dev for tput
+RUN apt update && apt install -y curl libncurses5-dev supervisor zip unzip # libncurses5-dev for tput
 
 RUN mkdir -p /var/log/supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
@@ -26,13 +26,10 @@ COPY --chown=1001:1001 --from=build-bonfhir /usr/src/hapi-fhir-cli /usr/bin/
 COPY --chown=1001:1001 --from=hapi-distroless /app /app
 
 COPY --chown=1001:1001 --from=bun  /usr/local/bin/bun /usr/bin/
-ADD --chown=1001:1001 ./package.json /bonfhir/
-ADD --chown=1001:1001 ./index.ts /bonfhir/
-ADD --chown=1001:1001 ./packages /bonfhir/packages/
-ADD --chown=1001:1001 ./plugins /bonfhir/plugins/
+ADD --chown=1001:1001 ./server-setup /bonfhir/server-setup/
 
 USER bonfhir
-RUN cd /bonfhir && bun install
+RUN cd /bonfhir/server-setup && bun install
 
 USER root
 

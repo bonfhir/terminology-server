@@ -1,5 +1,6 @@
 {
-  "name": "terminology-server-setup",
+  "name": "terminology-server",
+  "module": "index.ts",
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest",
@@ -10,6 +11,11 @@
   },
   "dependencies": {
     "@bonfhir/core": "^2.18.0",
-    "yaml": "^2.3.4"
+    "yaml": "^2.3.4",
+    "csv": "^6.3.8",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz"
+  },
+  "scripts": {
+    "start": "bun run index.ts"
   }
 }
